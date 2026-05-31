@@ -37,6 +37,32 @@ function animate() {
 
 没有 `setMatrixAt`，没有 `needsUpdate`。改属性，调 `update()`，完事。
 
+## 多实例使用
+
+```ts
+const count = 500
+const instances: Instance[] = []
+
+for (let i = 0; i < count; i++) {
+  const inst = new Instance(geo, mat)
+  const angle = (i / count) * Math.PI * 2
+  inst.position.set(Math.cos(angle) * 10, 0, Math.sin(angle) * 10)
+  inst.color.setHSL(i / count, 0.8, 0.5)
+  instances.push(inst)
+}
+batcher.addInstance(instances)
+
+function animate() {
+  for (let i = 0; i < instances.length; i++) {
+    instances[i].rotation.set(0, Date.now() * 0.001 + i * 0.1, 0)
+    instances[i].color.setHSL((Date.now() * 0.0001 + i * 0.002) % 1, 0.8, 0.5)
+  }
+  batcher.update(camera)
+  renderer.render(scene, camera)
+  requestAnimationFrame(animate)
+}
+```
+
 ## 工作原理
 
 `Instance` 在构造时包装了 `Vector3`、`Euler`、`Quaternion`、`Color` 的 setter 方法。通过 setter 的任何修改 — `position.set()`、`rotation.set()`、`quaternion.setFromEuler()`、`color.setHSL()` 等 — 自动将实例标记为脏。注意：直接属性赋值（`position.x = 5`）**不会**被追踪，请使用 `setX()` 或 `set()`。

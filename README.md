@@ -37,6 +37,32 @@ function animate() {
 
 No `setMatrixAt`. No `needsUpdate`. Just change properties and call `update()`.
 
+## Multiple Instances
+
+```ts
+const count = 500
+const instances: Instance[] = []
+
+for (let i = 0; i < count; i++) {
+  const inst = new Instance(geo, mat)
+  const angle = (i / count) * Math.PI * 2
+  inst.position.set(Math.cos(angle) * 10, 0, Math.sin(angle) * 10)
+  inst.color.setHSL(i / count, 0.8, 0.5)
+  instances.push(inst)
+}
+batcher.addInstance(instances)
+
+function animate() {
+  for (let i = 0; i < instances.length; i++) {
+    instances[i].rotation.set(0, Date.now() * 0.001 + i * 0.1, 0)
+    instances[i].color.setHSL((Date.now() * 0.0001 + i * 0.002) % 1, 0.8, 0.5)
+  }
+  batcher.update(camera)
+  renderer.render(scene, camera)
+  requestAnimationFrame(animate)
+}
+```
+
 ## How It Works
 
 `Instance` wraps `Vector3`, `Euler`, `Quaternion`, and `Color` setter methods at construction time. Any mutation via setter — `position.set()`, `rotation.set()`, `quaternion.setFromEuler()`, `color.setHSL()`, etc. — automatically marks that instance dirty. Note that direct property assignment (`position.x = 5`) is **not** tracked; use `setX()` or `set()` instead.

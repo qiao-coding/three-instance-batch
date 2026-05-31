@@ -1,6 +1,6 @@
 {
   "name": "three-instance-batch",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Declarative instanced rendering for Three.js — Instance describes what, InstanceBatcher decides how to draw",
   "type": "module",
   "main": "./dist/three-instance-batch.js",
