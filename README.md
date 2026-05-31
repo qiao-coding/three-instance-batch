@@ -28,7 +28,7 @@ inst.castShadow = true
 batcher.addInstance(inst)
 
 function animate() {
-  inst.position.x = Math.sin(Date.now() * 0.001) * 5
+  inst.position.setX(Math.sin(Date.now() * 0.001) * 5)
   batcher.update(camera)
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
@@ -39,7 +39,7 @@ No `setMatrixAt`. No `needsUpdate`. Just change properties and call `update()`.
 
 ## How It Works
 
-`Instance` wraps `Vector3`, `Quaternion`, and `Color` setter methods at construction time. Any mutation — `position.set()`, `quaternion.setFromEuler()`, `color.setHSL()`, etc. — automatically marks that instance dirty. On `batcher.update()`, only the changed matrix rows and color rows are written to the GPU buffer.
+`Instance` wraps `Vector3`, `Euler`, `Quaternion`, and `Color` setter methods at construction time. Any mutation via setter — `position.set()`, `rotation.set()`, `quaternion.setFromEuler()`, `color.setHSL()`, etc. — automatically marks that instance dirty. Note that direct property assignment (`position.x = 5`) is **not** tracked; use `setX()` or `set()` instead.
 
 Instances are grouped into `InstancedMesh` objects by a **group key** derived from geometry UUID, material properties, and shadow flags. Instances sharing the same key share one draw call.
 
@@ -109,6 +109,7 @@ new Instance(geometry: BufferGeometry, material: Material)
 | `material` | `Material` | Readonly |
 | `position` | `Vector3` | Auto-tracked |
 | `scale` | `Vector3` | Default `(1,1,1)`, auto-tracked |
+| `rotation` | `Euler` | Auto-tracked; syncs to `quaternion` on change |
 | `quaternion` | `Quaternion` | Auto-tracked |
 | `color` | `Color` | Default white, auto-tracked |
 | `visible` | `boolean` | Hidden instances write a zero matrix |
@@ -123,7 +124,7 @@ new Instance(geometry: BufferGeometry, material: Material)
 | `isAncestorOf(other)` | `boolean` | |
 | `dispose()` | `void` | Detaches from parent, detaches children, unsubscribes from all batchers |
 
-> **Note:** `rotation` (Euler) mutates are tracked and auto-sync to `quaternion`.
+> **Note:** Only method calls (`.set()`, `.setX()`, `.copy()`, etc.) are tracked. Property assignment (`position.x = 5`) bypasses the wrapper. Use `setX()` / `setY()` / `setZ()` for single-component updates.
 
 ### `InstanceBatcher`
 
@@ -170,7 +171,20 @@ The real bottleneck at scale is GPU draw calls and vertex throughput, not JS-sid
 
 ## Known Limitations
 
-- Frustum culling is JS-side only; it does not write zero matrices for culled instances.
+- Frustum culling collects per-instance visibility but does not yet skip culled instances in the render pass.
+
+## Development
+
+```bash
+git clone https://github.com/qiao-coding/three-instance-batch.git
+cd three-instance-batch
+npm install
+npm run test:run    # 56 tests
+npm run dev         # start demo at localhost:5173
+npm run build       # build to dist/
+```
+
+PRs welcome. Open an issue before starting on anything substantial.
 
 ## License
 

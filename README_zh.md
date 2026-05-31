@@ -28,7 +28,7 @@ inst.castShadow = true
 batcher.addInstance(inst)
 
 function animate() {
-  inst.position.x = Math.sin(Date.now() * 0.001) * 5
+  inst.position.setX(Math.sin(Date.now() * 0.001) * 5
   batcher.update(camera)
   renderer.render(scene, camera)
   requestAnimationFrame(animate)
@@ -39,7 +39,7 @@ function animate() {
 
 ## 工作原理
 
-`Instance` 在构造时包装了 `Vector3`、`Quaternion`、`Color` 的 setter 方法。任何修改 — `position.set()`、`quaternion.setFromEuler()`、`color.setHSL()` 等 — 自动将实例标记为脏。`batcher.update()` 时，只有变化的矩阵行和颜色行被写入 GPU buffer。
+`Instance` 在构造时包装了 `Vector3`、`Euler`、`Quaternion`、`Color` 的 setter 方法。通过 setter 的任何修改 — `position.set()`、`rotation.set()`、`quaternion.setFromEuler()`、`color.setHSL()` 等 — 自动将实例标记为脏。注意：直接属性赋值（`position.x = 5`）**不会**被追踪，请使用 `setX()` 或 `set()`。
 
 实例通过**分组键**归入 `InstancedMesh` 对象，分组键由几何体 UUID、材质属性和阴影标志生成。共享同一键的实例共享一次 Draw Call。
 
@@ -109,6 +109,7 @@ new Instance(geometry: BufferGeometry, material: Material)
 | `material` | `Material` | 只读 |
 | `position` | `Vector3` | 自动追踪 |
 | `scale` | `Vector3` | 默认 `(1,1,1)`，自动追踪 |
+| `rotation` | `Euler` | 自动追踪，变更时同步到 `quaternion` |
 | `quaternion` | `Quaternion` | 自动追踪 |
 | `color` | `Color` | 默认白色，自动追踪 |
 | `visible` | `boolean` | 隐藏实例写入零矩阵 |
@@ -123,7 +124,7 @@ new Instance(geometry: BufferGeometry, material: Material)
 | `isAncestorOf(other)` | `boolean` | |
 | `dispose()` | `void` | 断开父级、断开子级、取消所有 batcher 订阅 |
 
-> **注意：** `rotation`（Euler）的操作已被追踪并自动同步到 `quaternion`。
+> **注意：** 只有方法调用（`.set()`、`.setX()`、`.copy()` 等）被追踪。属性赋值（`position.x = 5`）绕过包装器。单分量更新请使用 `setX()` / `setY()` / `setZ()`。
 
 ### `InstanceBatcher`
 
@@ -170,7 +171,20 @@ new InstanceBatcher(options?: BatcherOptions)
 
 ## 已知局限
 
-- 视锥剔除仅在 JS 层实现；不向被剔除的实例写入零矩阵。
+- 视锥剔除收集逐实例可见性，但尚未在渲染 pass 中跳过被剔除的实例。
+
+## 参与开发
+
+```bash
+git clone https://github.com/qiao-coding/three-instance-batch.git
+cd three-instance-batch
+npm install
+npm run test:run    # 56 条测试
+npm run dev         # 启动 demo：localhost:5173
+npm run build       # 构建到 dist/
+```
+
+欢迎 PR。大改动前请先提 issue 讨论。
 
 ## License
 

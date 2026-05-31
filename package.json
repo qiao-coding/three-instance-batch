@@ -1,6 +1,6 @@
 {
   "name": "three-instance-batch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Declarative instanced rendering for Three.js — Instance describes what, InstanceBatcher decides how to draw",
   "type": "module",
   "main": "./dist/three-instance-batch.js",
@@ -25,11 +25,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xier123456/three-instance-batch"
+    "url": "https://github.com/qiao-coding/three-instance-batch.git"
   },
-  "author": "xier123456",
+  "author": "qiao-coding",
+  "homepage": "https://github.com/qiao-coding/three-instance-batch#readme",
   "bugs": {
-    "url": "https://github.com/xier123456/three-instance-batch/issues"
+    "url": "https://github.com/qiao-coding/three-instance-batch/issues"
   },
   "peerDependencies": {
     "three": ">=0.152.0"
